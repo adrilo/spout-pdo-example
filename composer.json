@@ -1,0 +1,23 @@
+{
+    "name": "adrilo/pdo-spout-example",
+    "description": "Demonstrates how to use Spout and PDO to create Excel reports from large data set without causing any out of memory issues",
+    "type": "project",
+    "keywords": ["php","spout","pdo","mysql","iterator","cursor","large","xlsx","excel","spreadsheet","scale","memory"],
+    "license": "Apache-2.0",
+    "homepage": "https://www.github.com/adrilo/pdo-spout-example",
+    "authors": [
+        {
+            "name": "Adrien Loison",
+            "email": "adrien@box.com"
+        }
+    ],
+    "require": {
+        "php": ">=5.4.0",
+        "box/spout": "~2.1"
+    },
+    "autoload": {
+        "psr-4": {
+            "SpoutExample\\": "src/SpoutExample"
+        }
+    }
+}
