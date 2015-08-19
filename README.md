@@ -41,6 +41,15 @@ Batch (500)       | 36.86s       | 2.25MB
 
 Even though PHPExcel is a great and popular library, it reaches its limits with large data sets. Spout was designed to support any size of data sets, making it super easy to scale without needing to worry about caching, optimizations, etc.
 
+To support the previous claim, the same set of metrics was collected, but using PHPExcel instead of Spout. Here are the results obtained:
+
+Num written rows | Metric       | PHPExcel | Spout   | Ratio
+-----------------|--------------|----------|---------|------
+50,000           | Elapsed time | 33.56s   | 8.02s   | **4.2x**
+                 | Memory peak  | 186MB    | 2.25MB  | **83x**
+200,000          | Elapsed time | 172.91s  | 36.86s  | **4.5x**
+                 | Memory peak  | 720.5MB  | 2.25MB  | **320x**
+
 
 ##### How can the example consume so little memory?
 

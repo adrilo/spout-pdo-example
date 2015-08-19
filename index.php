@@ -21,6 +21,8 @@ $reportCreator
     ->setFetchRowsInBatch(500)
 //    ->setFetchRowsOneByOne()
 //    ->setFetchAllRowsAtOnce()
+    ->setWriterType(\SpoutExample\ReportWriter\WriterType::SPOUT)
+//    ->setWriterType(\SpoutExample\ReportWriter\WriterType::PHP_EXCEL)
     ->fetchDataAndCreateReport($outputPath);
 
 // Display some stats

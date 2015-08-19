@@ -13,7 +13,8 @@
     ],
     "require": {
         "php": ">=5.4.0",
-        "box/spout": "~2.1"
+        "box/spout": "~2.1",
+        "phpoffice/phpexcel": "1.8.1"
     },
     "autoload": {
         "psr-4": {
