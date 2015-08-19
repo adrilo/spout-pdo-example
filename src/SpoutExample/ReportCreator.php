@@ -2,11 +2,11 @@
 
 namespace SpoutExample;
 
-use Box\Spout\Common\Type;
-use Box\Spout\Writer\Style\StyleBuilder;
-use Box\Spout\Writer\WriterFactory;
 use SpoutExample\Iterator\BatchFetchIterator;
 use SpoutExample\Iterator\SingleFetchIterator;
+use SpoutExample\ReportWriter\PHPExcelWriter;
+use SpoutExample\ReportWriter\SpoutWriter;
+use SpoutExample\ReportWriter\WriterType;
 
 /**
  * Class ReportCreator
@@ -25,7 +25,10 @@ class ReportCreator
     /** @var \PDO PDO instance */
     private $pdo;
 
-    /** @var \Box\Spout\Writer\XLSX\Writer Writer used to create a XLSX report */
+    /** @var ReportWriter\WriterType Type of writer to use */
+    private $writerType = WriterType::SPOUT;
+
+    /** @var ReportWriter\AbstractWriter Writer used to create a XLSX report */
     private $reportWriter;
 
     /** @var int The fetching method to use, used for benchmarks */
@@ -40,7 +43,6 @@ class ReportCreator
     public function __construct(DBConf $dbConf)
     {
         $this->pdo = new \PDO($dbConf->getDSN(), $dbConf->getUsername(), $dbConf->getPassword());
-        $this->reportWriter = WriterFactory::create(Type::XLSX);
     }
 
     /**
@@ -79,8 +81,36 @@ class ReportCreator
     {
         switch ($this->fetchingMethod) {
             case self::FETCH_ROWS_ONE_BY_ONE: return 'Fetch mode: one by one';
-            case self::FETCH_ROWS_IN_BATCH: return 'Fetch mode: batch';
             case self::FETCH_ROWS_ALL_AT_ONCE: return 'Fetch mode: all at once';
+            case self::FETCH_ROWS_IN_BATCH:
+            default:
+                return 'Fetch mode: batch';
+        }
+    }
+
+    /**
+     * @see \SpoutExample\ReportWriter\WriterType
+     *
+     * @param string $writerType
+     * @return ReportCreator
+     */
+    public function setWriterType($writerType)
+    {
+        $this->writerType = $writerType;
+        return $this;
+    }
+
+    /**
+     * @param $outputPath
+     * @return ReportWriter\AbstractWriter
+     */
+    private function createReportWriter($outputPath)
+    {
+        switch ($this->writerType) {
+            case WriterType::PHP_EXCEL: return new PHPExcelWriter($outputPath);
+            case WriterType::SPOUT:
+            default:
+                return new SpoutWriter($outputPath);
         }
     }
 
@@ -92,7 +122,7 @@ class ReportCreator
      */
     public function fetchDataAndCreateReport($outputPath)
     {
-        $this->reportWriter->openToFile($outputPath);
+        $this->reportWriter = $this->createReportWriter($outputPath);
         $this->writeReportHeader();
 
         // Make sure to only select the fields we are interested in
@@ -124,7 +154,7 @@ class ReportCreator
 
         foreach ($dbRowIterator as $dbRow) {
             $reportRow = [$dbRow['name'], $dbRow['price'], $dbRow['quantity_available'], $dbRow['quantity_sold']];
-            $this->reportWriter->addRow($reportRow);
+            $this->reportWriter->writeRow($reportRow);
         }
     }
 
@@ -141,7 +171,7 @@ class ReportCreator
         foreach ($batchFetchIterator as $dbRows) {
             foreach ($dbRows as $dbRow) {
                 $reportRow = [$dbRow['name'], $dbRow['price'], $dbRow['quantity_available'], $dbRow['quantity_sold']];
-                $this->reportWriter->addRow($reportRow);
+                $this->reportWriter->writeRow($reportRow);
             }
         }
     }
@@ -159,7 +189,7 @@ class ReportCreator
 
         foreach ($allDBRows as $dbRow) {
             $reportRow = [$dbRow['name'], $dbRow['price'], $dbRow['quantity_available'], $dbRow['quantity_sold']];
-            $this->reportWriter->addRow($reportRow);
+            $this->reportWriter->writeRow($reportRow);
         }
 
         $statement->closeCursor();
@@ -172,8 +202,6 @@ class ReportCreator
     {
         // The header will be bold
         $headerRow = ['Name', 'Price', 'Available', 'Sold'];
-        $headerStyle = (new StyleBuilder())->setFontBold()->build();
-
-        $this->reportWriter->addRowWithStyle($headerRow, $headerStyle);
+        $this->reportWriter->writeHeaderRow($headerRow);
     }
 }
